@@ -13,7 +13,17 @@ const createConversation = async (req, res, next) => {
       return respondWithHttpStatusCode(400, res, req.method);
     } else {
       if (senderId === receiverId) {
-      }
+        const findSelfChat = await Conversation.findOne({users:[senderId, {type: 'self'}]});
+        if(!findSelfChat){
+          let conversation = new Conversation({ users: [senderId, {type: 'self'}] });
+
+        await conversation.save();
+        return res.status(201).json(conversation);
+        }else{
+          return respondWithData(201, res, findSelfChat);
+        }
+        
+      } else {
       const findDuplicate = await Conversation.findOne({
         users: { $all: [senderId, receiverId] },
       });
@@ -27,6 +37,7 @@ const createConversation = async (req, res, next) => {
         return res.status(201).json(conversation);
       }
     }
+  }
   } catch (error) {
     return next(error);
   }
@@ -42,6 +53,7 @@ const getConversationWithId = async (req, res, next) => {
     const userDetails = await Promise.all(
       conversation.map(async (item) => {
         const otherUserId = item.users.filter((user) => user !== UserId)[0];
+        if(otherUserId.type !== 'self'){
         const user = await User.findById(otherUserId).select(
           "-password -__v -refreshToken"
         );
@@ -55,6 +67,21 @@ const getConversationWithId = async (req, res, next) => {
           conversationId: item._id,
         };
         return data;
+      } else {
+        const user = await User.findById(UserId).select(
+          "-password -__v -refreshToken"
+        );
+        const data = {
+          user: {
+            email: user.email,
+            id: user._id,
+            username: user.username,
+            fullName: user.fullName += " (You)",
+          },
+          conversationId: item._id,
+        };
+        return data;
+      }
       })
     );
     return respondWithData(

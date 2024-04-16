@@ -30,6 +30,12 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    isConnected: {
+        type: Boolean,
+    },
+    lastSeen: {
+        type: Date,
+    },
     refreshToken: String,
     }, { timestamps: true });
 

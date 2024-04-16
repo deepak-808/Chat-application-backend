@@ -1,8 +1,7 @@
 import { format } from 'date-fns';
 import { v4 } from 'uuid';
 
-import fs from 'fs';
-import fsPromise from 'fs/promises';
+import fs,{ promises }from 'fs';
 import path from 'path';
 
 const logEvents = async(event, data) => {
@@ -11,10 +10,10 @@ const logEvents = async(event, data) => {
   const __dirname = path.dirname(new URL(import.meta.url).pathname);
   try {
     if (!fs.existsSync(path.join(__dirname, '..', 'logs'))) {
-        await fsPromise.mkdir(path.join(__dirname, '..', 'logs'));
+        await promises.mkdir(path.join(__dirname, '..', 'logs'));
     }
 
-    await fsPromise.appendFile(path.join(__dirname, '..', 'logs', data), logItem);
+    await promises.appendFile(path.join(__dirname, '..', 'logs', data), logItem);
 } catch (err) {
     console.log(err);
 }
